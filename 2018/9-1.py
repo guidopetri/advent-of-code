@@ -8,11 +8,11 @@ class Marble():
         self.next_clockwise = None
         self.previous_clockwise = None
 
-    def set_prev(self, prev_marble):
-        self.next_clockwise = prev_marble.next_clockwise
+    def set_between(self, prev_marble, next_marble):
+        self.next_clockwise = next_marble
         self.previous_clockwise = prev_marble
-        self.next_clockwise.previous_clockwise = self
-        self.previous_clockwise.next_clockwise = self
+        next_marble.previous_clockwise = self
+        prev_marble.next_clockwise = self
 
     def get_previous(self):
         return self.previous_clockwise
@@ -36,8 +36,9 @@ class CircularQueue():
         starting_marble.previous_clockwise = starting_marble
 
     def insert_marble(self, new_marble):
-        next_marble = self.head.get_next()
-        new_marble.set_prev(next_marble)
+        next_marble = self.head.get_next().get_next()
+        prev_marble = self.head.get_next()
+        new_marble.set_between(prev_marble, next_marble)
         self.head = new_marble
 
     def current_marble(self):
@@ -49,7 +50,7 @@ class CircularQueue():
             marble_to_pop = marble_to_pop.get_previous()
         prev_marble = marble_to_pop.get_previous()  # 18
         next_marble = marble_to_pop.get_next()  # 19
-        next_marble.set_prev(prev_marble)
+        next_marble.set_between(prev_marble, next_marble.get_next())
         self.head = next_marble
 
         return marble_to_pop
@@ -116,7 +117,7 @@ content = [int(x) for x in content if x.isdigit()]
 
 # 32
 PLAYER_COUNT = 9
-LAST_MARBLE_VALUE = 23
+LAST_MARBLE_VALUE = 25
 
 # 8317
 # PLAYER_COUNT = 10
