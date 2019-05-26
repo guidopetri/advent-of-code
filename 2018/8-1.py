@@ -37,7 +37,7 @@ class Tree():
 
 # read input
 with open('8-input.txt', 'r') as f:
-    content = f.read().split(' ')
+    content = f.read().split()
 
 content = [int(x) for x in content]
 
