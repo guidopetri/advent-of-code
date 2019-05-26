@@ -8,11 +8,17 @@ class Marble():
         self.next_clockwise = None
         self.previous_clockwise = None
 
-    def set_next(self, prev_marble):
+    def set_prev(self, prev_marble):
         self.next_clockwise = prev_marble.next_clockwise
         self.previous_clockwise = prev_marble
         self.next_clockwise.previous_clockwise = self
         self.previous_clockwise.next_clockwise = self
+
+    def get_previous(self):
+        return self.previous_clockwise
+
+    def get_next(self):
+        return self.next_clockwise
 
     def __repr__(self):
         return "Next marble: {}, " \
@@ -22,28 +28,84 @@ class Marble():
                                   self.value)
 
 
+class CircularQueue():
+
+    def __init__(self, starting_marble):
+        self.head = starting_marble
+        starting_marble.next_clockwise = starting_marble
+        starting_marble.previous_clockwise = starting_marble
+
+    def insert_marble(self, new_marble):
+        next_marble = self.head.get_next()
+        new_marble.set_prev(next_marble)
+        self.head = new_marble
+
+    def current_marble(self):
+        return self.head
+
+    def pop_7_behind(self):
+        marble_to_pop = self.current_marble()
+        for x in range(7):
+            marble_to_pop = marble_to_pop.get_previous()
+        prev_marble = marble_to_pop.get_previous()  # 18
+        next_marble = marble_to_pop.get_next()  # 19
+        next_marble.set_prev(prev_marble)
+        self.head = next_marble
+
+        return marble_to_pop
+
+    def __repr__(self):
+        queue = [self.head.value]
+        current = self.head.get_next()
+        while current != self.head:
+            queue.append(current.value)
+            current = current.get_next()
+        queue.append(self.head.value)
+
+        return queue.__repr__()
+
+
+class Player():
+
+    counter = 0
+
+    def __init__(self):
+        Player.counter += 1
+        self.score = 0
+        self.id = Player.counter
+
+    def add_marble(self, marble):
+        self.score += marble.value
+
+    def get_score(self):
+        return self.score
+
+
 def marble_game_logic(players, last_marble_value):
-    value = 0
-    marbles = []
-    while value <= last_marble_value:
+
+    circle = CircularQueue(Marble(0))
+
+    for value in range(1, last_marble_value + 1):
+
+        current_player = players[(value - 1) % PLAYER_COUNT]
 
         new_marble = Marble(value)
-        if value == 0:
-            new_marble.next_clockwise = new_marble
-            new_marble.previous_clockwise = new_marble
-        # elif value == 23:
-        #     new_marble.set_next(marbles[-7])
+
+        if value % 23 == 0:
+            other_marble = circle.pop_7_behind()
+            current_player.add_marble(new_marble)
+            current_player.add_marble(other_marble)
         else:
-            new_marble.set_next(marbles[-1])
-        marbles.append(new_marble)
-        # print([marble.value for marble in marbles])
-        value += 1
-    return marbles[-1]
+            circle.insert_marble(new_marble)
+
+    return circle
 
 
 # 428 players; last marble is worth 70825 points
 with open('9-input.txt', 'r') as f:
     content = f.read().split()
+
+# this is yet another new data structure: the circular queue
 
 content = [int(x) for x in content if x.isdigit()]
 
@@ -54,7 +116,7 @@ content = [int(x) for x in content if x.isdigit()]
 
 # 32
 PLAYER_COUNT = 9
-LAST_MARBLE_VALUE = 25
+LAST_MARBLE_VALUE = 23
 
 # 8317
 # PLAYER_COUNT = 10
@@ -76,4 +138,15 @@ LAST_MARBLE_VALUE = 25
 # PLAYER_COUNT = 21
 # LAST_MARBLE_VALUE = 5807
 
-print(marble_game_logic(PLAYER_COUNT, LAST_MARBLE_VALUE))
+players = []
+for player in range(1, PLAYER_COUNT + 1):
+    players.append(Player())
+
+print(marble_game_logic(players, LAST_MARBLE_VALUE))
+
+scores = {player.get_score(): player.id for player in players}
+
+best_score = max(scores.keys())
+best_scorer = scores[best_score]
+
+print("Best score was {} by player {}".format(best_score, best_scorer))
