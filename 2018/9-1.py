@@ -110,14 +110,14 @@ with open('9-input.txt', 'r') as f:
 
 content = [int(x) for x in content if x.isdigit()]
 
-# PLAYER_COUNT = content[0]
-# LAST_MARBLE_VALUE = content[1]
+PLAYER_COUNT = content[0]
+LAST_MARBLE_VALUE = content[1]
 
 # other examples:
 
 # 32
-PLAYER_COUNT = 9
-LAST_MARBLE_VALUE = 25
+# PLAYER_COUNT = 9
+# LAST_MARBLE_VALUE = 25
 
 # 8317
 # PLAYER_COUNT = 10
@@ -136,14 +136,14 @@ LAST_MARBLE_VALUE = 25
 # LAST_MARBLE_VALUE = 6111
 
 # 37305
-# PLAYER_COUNT = 21
+# PLAYER_COUNT = 30
 # LAST_MARBLE_VALUE = 5807
 
 players = []
 for player in range(1, PLAYER_COUNT + 1):
     players.append(Player())
 
-print(marble_game_logic(players, LAST_MARBLE_VALUE))
+circle = marble_game_logic(players, LAST_MARBLE_VALUE)
 
 scores = {player.get_score(): player.id for player in players}
 
