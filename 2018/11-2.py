@@ -28,12 +28,25 @@ for column in fuel_cells.columns:
     fuel_cells[column] = fuel_cells[column] - 5
 
 # original idea was to aggregate neighboring columns then neighboring rows
-# but using .rolling().sum() is better:
-power_grid = fuel_cells.rolling(3, center=True, axis=0).sum()
-power_grid = power_grid.rolling(3, center=True, axis=1).sum()
-power_grid = power_grid.astype(float)
+# but using .rolling().sum() is better
+last_max_power = 0
+ideal_grid_size = 1
+grid_x = 0
+grid_y = 0
 
-# we have to actually get the top left corner, but reorder the index
-print("X: {}".format(power_grid.max(axis=1).idxmax())) - 1 + 1
-print("Y: {}".format(power_grid.max(axis=0).idxmax())) - 1 + 1
-print("Max total power: {}".format(power_grid.max().max()))
+for i in range(1, 301):
+    power_grid = fuel_cells.rolling(i, center=True, axis=0).sum()
+    power_grid = power_grid.rolling(i, center=True, axis=1).sum()
+    power_grid = power_grid.astype(float)
+
+    max_power = power_grid.max().max()
+    if max_power > last_max_power:
+        ideal_grid_size = i
+        last_max_power = max_power
+        grid_x = power_grid.max(axis=1).idxmax() - (i // 2) + 1
+        grid_y = power_grid.max(axis=0).idxmax() - (i // 2) + 1
+
+print("Best X: {}".format(grid_x))
+print("Best Y: {}".format(grid_y))
+print("Best grid size: {}".format(ideal_grid_size))
+print("Max total power: {}".format(last_max_power))
