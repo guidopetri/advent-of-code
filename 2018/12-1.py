@@ -5,9 +5,19 @@ import re
 
 def next_gen(last_gen, rules):
     new_gen = []
-    last_gen = '....' + last_gen + '....'
-    for index_pot in range(4, len(last_gen) - 1):
-        rule = last_gen[index_pot - 3:index_pot + 2]
+    last_gen = last_gen
+    for index_pot in range(0, len(last_gen)):
+        if index_pot < 1:
+            rule = '..' + last_gen[index_pot:index_pot + 3]
+        elif index_pot < 2:
+            rule = '.' + last_gen[index_pot - 1:index_pot + 3]
+        elif len(last_gen) - index_pot < 2:
+            rule = last_gen[index_pot - 2:index_pot + 1] + '..'
+        elif len(last_gen) - index_pot < 3:
+            rule = last_gen[index_pot - 2:index_pot + 2] + '.'
+        else:
+            rule = last_gen[index_pot - 2:index_pot + 3]
+
         rule = ''.join(rule)
 
         if rule in rules:
@@ -19,7 +29,7 @@ def next_gen(last_gen, rules):
         # regex = r'(?<=' + rule[:2] + r')(' + rule[2:3] + r')
         # (?=' + rule[3:] + r')'
     new_gen = ''.join(new_gen)
-    new_gen = new_gen.strip('.')
+    # new_gen = new_gen.strip('.')
     return new_gen
 
 
@@ -53,13 +63,19 @@ for match in re.finditer(r'([\.\#]{5}) => ([\.\#])', example_content):
 
 # i now realize that the indices of the pots matter, because we need to
 # add them up.
+surrounding_pots = ''.join(['.' for x in range(20)])
+last_gen = surrounding_pots + initial_state + surrounding_pots
+
+for generation in range(20):
+    print('{}: '.format(generation), last_gen)
+    new_state = next_gen(last_gen, rules)
+    last_gen = new_state
 
 plant_sum = 0
-last_gen = initial_state
-plant_sum += last_gen.count('#')
-for generation in range(20):
-    print('{}: '.format(generation), plant_sum, last_gen)
-    new_state = next_gen(last_gen, rules)
-    # print('new gen')
-    plant_sum += new_state.count('#')
-    last_gen = new_state
+
+for index in range(0, len(last_gen)):
+    if last_gen[index] == '#':
+        plant_sum = plant_sum + index - 20
+
+print('20: ', last_gen)
+print('\nSum of plant-containing pot indices: {}'.format(plant_sum))
