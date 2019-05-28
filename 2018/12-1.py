@@ -26,10 +26,7 @@ def next_gen(last_gen, rules):
             result = '.'
 
         new_gen.append(result)
-        # regex = r'(?<=' + rule[:2] + r')(' + rule[2:3] + r')
-        # (?=' + rule[3:] + r')'
     new_gen = ''.join(new_gen)
-    # new_gen = new_gen.strip('.')
     return new_gen
 
 
@@ -55,10 +52,10 @@ example_content = """initial state: #..#.#..##......###...###
 ####. => #"""
 
 initial_state = re.search(r'initial state: ([\.\#]+?)\n',
-                          example_content).group(1)
+                          content).group(1)
 
 rules = {}
-for match in re.finditer(r'([\.\#]{5}) => ([\.\#])', example_content):
+for match in re.finditer(r'([\.\#]{5}) => ([\.\#])', content):
     rules[match.group(1)] = match.group(2)
 
 # i now realize that the indices of the pots matter, because we need to
