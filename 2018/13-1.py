@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 from enum import Enum, unique
+import re
 
 
 @unique
@@ -13,7 +14,11 @@ class Directions(Enum):
 
 class Cart():
 
+    id_counter = 0
+
     def __init__(self, x, y, direction):
+        self.id = Cart.id_counter
+        Cart.id_counter += 1
         self.x = x
         self.y = y
         self.direction = self.get_direction(direction)
@@ -60,12 +65,19 @@ class Cart():
         self.intersection_counter %= 3
 
     def __repr__(self):
-        return 'Cart: {}, {}'.format(self.position, self.direction.name)
+        return 'Cart {}: {}, {}'.format(self.id,
+                                        self.position,
+                                        self.direction.name)
 
 
 def advance_one_tick(grid, carts):
-    cart_positions = set()
+    def sorting_fn(cart):
+        return cart.x + 100 * cart.y
+
+    carts.sort(key=sorting_fn)
+    cart_positions = set([cart.position for cart in carts])
     for cart in carts:
+        cart_positions.remove(cart.position)
         cart.move_forward()
         if cart.position not in cart_positions:
             cart_positions.add(cart.position)
@@ -108,6 +120,36 @@ def read_positions(grid):
     return carts
 
 
+def join_grid(grid):
+    return '\n'.join([''.join(x) for x in grid])
+
+
+def place_carts(grid, carts):
+    from copy import deepcopy
+
+    replaced_grid = deepcopy(grid)
+
+    # pretty-print colors
+    RED = '\033[0;31m'
+    NC = '\033[0m'  # No Color
+
+    for cart in carts:
+        if cart.direction == Directions.UP:
+            character = '^'
+        elif cart.direction == Directions.DOWN:
+            character = 'v'
+        elif cart.direction == Directions.LEFT:
+            character = '<'
+        elif cart.direction == Directions.RIGHT:
+            character = '>'
+
+        character = RED + character + NC
+
+        replaced_grid[cart.y][cart.x] = character
+
+    return replaced_grid
+
+
 with open('13-input.txt', 'r') as f:
     content = f.read()
 
@@ -118,12 +160,15 @@ example_content = """/->-\\
 \\-+-/  \\-+--/
   \\------/   """  # noqa
 
-carts = read_positions(example_content)
-grid = [list(x) for x in example_content.split('\n')]
+carts = read_positions(content)
+cartless_grid = re.sub(r'>|<', '-', content)
+cartless_grid = re.sub(r'\^|v', '|', cartless_grid)
+grid = [list(x) for x in cartless_grid.split('\n')]
 
-print(carts)
-
-for i in range(15):
-    advance_one_tick(grid, carts)
-    # if i > 600:
-    #     print(carts)
+for i in range(1000):
+    try:
+        advance_one_tick(grid, carts)
+    except ValueError as e:
+        new_grid = place_carts(grid, carts)
+        print(join_grid(new_grid))
+        raise e
