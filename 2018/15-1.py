@@ -49,8 +49,8 @@ class BattleUnit(object):
             if len(attackable) > 1:
                 attackable.sort(key=lambda x: x.hp)
 
-            # TODO: find reading order minimum as well
-            other = attackable[0]
+            attackable = [x for x in attackable if x.hp == attackable[0].hp]
+            other = find_order(attackable)[0]
             other.hp -= self.atk
             # TODO: check if other died and set appropriate flag / del him
 
