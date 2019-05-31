@@ -49,10 +49,18 @@ class BattleUnit(object):
             if len(attackable) > 1:
                 attackable.sort(key=lambda x: x.hp)
 
+            # TODO: find reading order minimum as well
             other = attackable[0]
             other.hp -= self.atk
+            # TODO: check if other died and set appropriate flag / del him
 
     def move(self, units):
+        # step 1: find range (squares adjacent to any target, not occupied)
+        # step 2: if already in range, return
+        # step 3: find reachable squares
+        # step 4: pick nearest squares
+        # step 5: choose in reading order
+        # step 6: move in that direction (again in reading order)
         pass
 
     def __repr__(self):
@@ -119,12 +127,19 @@ for line in raw_data.split('\n'):
         units.append(new_unit)
     y += 1
 
+round_counter = 0
+
 while Goblin.units and Elf.units:
     find_order(units)
     for unit in units:
         unit.move(units)
         unit.attack(units)
+    round_counter += 1
     break
 
-print(Goblin.units)
+rounds_completed = round_counter - 1
+units_remaining = Goblin.units + Elf.units
+hp_sum = sum([unit.hp for unit in units_remaining])
+
+print(rounds_completed * hp_sum)
 # print(Elf.units)
