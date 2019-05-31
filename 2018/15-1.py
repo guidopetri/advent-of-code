@@ -23,11 +23,16 @@ class BattleUnit(object):
         self.y = y
         self.atk = 3
         self.hp = 200
+        self.alive = True
         self.add_to_counter(self)
 
     @classmethod
     def add_to_counter(cls, self):
         cls.units.append(self)
+
+    @classmethod
+    def remove_from_counter(cls, self):
+        cls.units.remove(self)
 
     @property
     def position(self):
@@ -52,7 +57,9 @@ class BattleUnit(object):
             attackable = [x for x in attackable if x.hp == attackable[0].hp]
             other = find_order(attackable)[0]
             other.hp -= self.atk
-            # TODO: check if other died and set appropriate flag / del him
+            if other.hp < 1:
+                other.alive = False
+                other.remove_from_counter(other)
 
     def move(self, units):
         # step 1: find range (squares adjacent to any target, not occupied)
