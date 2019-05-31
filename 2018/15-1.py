@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import re
+from collections import deque
 
 
 class Position(object):
@@ -40,7 +41,6 @@ class BattleUnit(object):
         pass  # default implementation
 
     def attack(self, units):
-        # print('attacking, {}'.format(self))
         attackable = []
         for unit in units:
             if get_distance(self, unit) == 1:
@@ -106,6 +106,23 @@ def find_nearest(unit_pos, other_pos):
 
 def get_distance(pos1, pos2):
     return abs(pos1.x - pos2.x) + abs(pos1.y - pos2.y)
+
+
+def find_shortest_path(origin, pos2, full_map):
+    queue = deque()
+    queue.append((origin, 0))
+    while len(queue):
+        loc, distance = queue.popleft()
+        if loc == pos2:
+            return distance
+        neighboring_positions = [(loc.x + 1, loc.y),
+                                 (loc.x - 1, loc.y),
+                                 (loc.x, loc.y + 1),
+                                 (loc.x, loc.y - 1)]
+        for position in neighboring_positions:
+            if full_map.get_position(position) == '.':
+                queue.append((position, distance + 1))
+    return None
 
 
 with open('15-input.txt', 'r') as f:
