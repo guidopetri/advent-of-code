@@ -16,6 +16,18 @@ class Position(object):
         return '(' + ', '.join((attrs)) + ')'
 
 
+class BattleMap(object):
+
+    def __init__(self, data):
+        self.data = data.split('\n')
+
+    def get_position(self, position):
+        return self.data[position.y][position.x]
+
+    def __repr__(self):
+        return '\n'.join(self.data)
+
+
 class BattleUnit(object):
 
     def __init__(self, x, y):
@@ -55,13 +67,14 @@ class BattleUnit(object):
                 attackable.sort(key=lambda x: x.hp)
 
             attackable = [x for x in attackable if x.hp == attackable[0].hp]
-            other = find_order(attackable)[0]
+            find_order(attackable)
+            other = attackable[0]
             other.hp -= self.atk
             if other.hp < 1:
                 other.alive = False
                 other.remove_from_counter(other)
 
-    def move(self, units):
+    def move(self, units, full_map):
         # step 1: find range (squares adjacent to any target, not occupied)
         # step 2: if already in range, return
         # step 3: find reachable squares
@@ -127,6 +140,7 @@ def find_shortest_path(origin, pos2, full_map):
                                  (loc.x, loc.y + 1),
                                  (loc.x, loc.y - 1)]
         for position in neighboring_positions:
+            # TODO: check if already occupied by another unit
             if full_map.get_position(position) == '.':
                 queue.append((position, distance + 1))
     return None
@@ -135,9 +149,8 @@ def find_shortest_path(origin, pos2, full_map):
 with open('15-input.txt', 'r') as f:
     raw_data = f.read()
 
-battle_map = re.sub(r'G|E', '.', raw_data)
-
-units = []
+map_raw = re.sub(r'G|E', '.', raw_data)
+map_parsed = BattleMap(map_raw)
 
 y = 0
 for line in raw_data.split('\n'):
@@ -148,15 +161,15 @@ for line in raw_data.split('\n'):
             unit_type = Elf
         x = match.start(1)
         new_unit = unit_type(x, y)
-        units.append(new_unit)
     y += 1
 
 round_counter = 0
 
 while Goblin.units and Elf.units:
+    units = Goblin.units + Elf.units
     find_order(units)
     for unit in units:
-        unit.move(units)
+        unit.move(units, map_parsed)
         unit.attack(units)
     round_counter += 1
     break
@@ -166,4 +179,3 @@ units_remaining = Goblin.units + Elf.units
 hp_sum = sum([unit.hp for unit in units_remaining])
 
 print(rounds_completed * hp_sum)
-# print(Elf.units)
