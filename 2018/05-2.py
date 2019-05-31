@@ -4,7 +4,7 @@ import re
 
 
 # read input
-with open('5-input.txt', 'r') as f:
+with open('05-input.txt', 'r') as f:
     content = f.read()
 
 re_string = re.compile(r'(\w)(\1)', flags=re.IGNORECASE)

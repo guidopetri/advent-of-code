@@ -19,7 +19,7 @@ class Step():
 
 # this is a Directed Acyclic Graph problem
 
-with open('7-input.txt', 'r') as f:
+with open('07-input.txt', 'r') as f:
     content = f.read().split('\n')
 
 reqs_tuples = []

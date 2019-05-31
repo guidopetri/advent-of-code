@@ -13,7 +13,7 @@ def insert_id_into_fabric(instruction, fabric):
     return
 
 
-with open('3-input.txt', 'r') as f:
+with open('03-input.txt', 'r') as f:
     content = f.read().split('\n')
 
 # #123 @ 3,2: 5x4

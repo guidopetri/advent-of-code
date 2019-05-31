@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 # open our file
-with open('2-input.txt', 'r') as f:
+with open('02-input.txt', 'r') as f:
     # read the content of the input file and split it into a list
     # each element is one line
     content = f.read().split('\n')

@@ -11,7 +11,7 @@ def valid_triangle(num1, num2, num3):
     return ((s1 > num1) & (s2 > num2) & (s3 > num3))
 
 
-with open('3-1-input.txt', 'r') as f:
+with open('03-input.txt', 'r') as f:
     data = f.read()
 
 valid_triangles = 0

@@ -19,7 +19,7 @@ def get_date(x):
 
 
 # read input
-with open('4-input.txt', 'r') as f:
+with open('04-input.txt', 'r') as f:
     content = f.read().split('\n')
 
 # [1518-09-22 23:50] Guard #2309 begins shift

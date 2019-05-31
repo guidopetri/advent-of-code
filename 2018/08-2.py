@@ -27,7 +27,7 @@ class Node():
 
 
 # read input
-with open('8-input.txt', 'r') as f:
+with open('08-input.txt', 'r') as f:
     data = f.read().split(' ')
 
 data = [int(x) for x in data]

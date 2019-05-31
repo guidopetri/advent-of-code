@@ -103,7 +103,7 @@ def marble_game_logic(players, last_marble_value):
 
 
 # 428 players; last marble is worth 70825 points
-with open('9-input.txt', 'r') as f:
+with open('09-input.txt', 'r') as f:
     content = f.read().split()
 
 # this is yet another new data structure: the circular queue

@@ -7,7 +7,7 @@ pd.options.display.max_rows = 999
 pd.options.display.max_columns = 999
 
 # read input
-with open('6-input.txt', 'r') as f:
+with open('06-input.txt', 'r') as f:
     content = f.read().split('\n')
 
 content_tuples = []

@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-with open('2-input.txt', 'r') as f:
+with open('02-input.txt', 'r') as f:
     content = f.read().split('\n')
 
 two_letter_count = 0
