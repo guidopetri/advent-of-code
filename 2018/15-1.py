@@ -19,6 +19,15 @@ class Position(object):
             attrs.append(value + ' = ' + str(getattr(self, value)))
         return '(' + ', '.join((attrs)) + ')'
 
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return other.__dict__ == self.__dict__
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
+
 
 class BattleMap(object):
 
@@ -139,29 +148,31 @@ def get_distance(pos1, pos2):
 def find_shortest_path(origin, pos2, full_map):
     queue = deque()
     queue.append((origin, 0))
+    burned = set()
     while len(queue):
         loc, distance = queue.popleft()
-        if loc == pos2:
-            return distance
-        neighboring_positions = [Position(loc.x + 1, loc.y),
-                                 Position(loc.x - 1, loc.y),
-                                 Position(loc.x, loc.y + 1),
-                                 Position(loc.x, loc.y - 1)]
-        for position in neighboring_positions:
-            if any([unit.position == position for unit in units]):
-                continue
-            elif full_map.get_position(position) == '#':
+        distance += 1
+        neighboring_pos = [Position(loc.x + 1, loc.y),
+                           Position(loc.x - 1, loc.y),
+                           Position(loc.x, loc.y + 1),
+                           Position(loc.x, loc.y - 1)]
+        new_positions = [pos for pos in neighboring_pos if pos not in burned]
+        for position in new_positions:
+            burned.add(position)
+            if position == pos2:
+                return distance
+            if full_map.get_position(position) == '#':
                 continue
             elif full_map.get_position(position) == '.':
-                queue.append((position, distance + 1))
-    return distance
+                queue.append((position, distance))
+    return None
 
 
 with open('15-input.txt', 'r') as f:
     raw_data = f.read()
 
 map_raw = re.sub(r'G|E', '.', raw_data)
-map_parsed = BattleMap(map_raw)
+map_parsed = BattleMap(raw_data)
 
 y = 0
 for line in raw_data.split('\n'):
@@ -175,6 +186,13 @@ for line in raw_data.split('\n'):
     y += 1
 
 round_counter = 0
+
+print(Goblin.units[0].position,
+      Elf.units[0].position, flush=True)
+distance = find_shortest_path(Goblin.units[0].position,
+                              Elf.units[0].position,
+                              map_parsed)
+print(distance, flush=True)
 
 while Goblin.units and Elf.units:
     units = Goblin.units + Elf.units
