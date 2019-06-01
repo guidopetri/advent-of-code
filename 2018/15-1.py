@@ -6,6 +6,10 @@ from collections import deque
 
 class Position(object):
 
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
     def __repr__(self):
         return str(self.__dict__)
 
@@ -48,10 +52,7 @@ class BattleUnit(object):
 
     @property
     def position(self):
-        pos = Position()
-        pos.x = self.x
-        pos.y = self.y
-        return pos
+        return Position(self.x, self.y)
 
     @property
     def team(cls):
@@ -75,6 +76,13 @@ class BattleUnit(object):
                 other.remove_from_counter(other)
 
     def move(self, units, full_map):
+        for unit in units:
+            if self != unit:
+                distance = find_shortest_path(self.position,
+                                              unit.position,
+                                              full_map)
+                print(units[0], distance)
+                break
         # step 1: find range (squares adjacent to any target, not occupied)
         # step 2: if already in range, return
         # step 3: find reachable squares
@@ -135,15 +143,18 @@ def find_shortest_path(origin, pos2, full_map):
         loc, distance = queue.popleft()
         if loc == pos2:
             return distance
-        neighboring_positions = [(loc.x + 1, loc.y),
-                                 (loc.x - 1, loc.y),
-                                 (loc.x, loc.y + 1),
-                                 (loc.x, loc.y - 1)]
+        neighboring_positions = [Position(loc.x + 1, loc.y),
+                                 Position(loc.x - 1, loc.y),
+                                 Position(loc.x, loc.y + 1),
+                                 Position(loc.x, loc.y - 1)]
         for position in neighboring_positions:
-            # TODO: check if already occupied by another unit
-            if full_map.get_position(position) == '.':
+            if any([unit.position == position for unit in units]):
+                continue
+            elif full_map.get_position(position) == '#':
+                continue
+            elif full_map.get_position(position) == '.':
                 queue.append((position, distance + 1))
-    return None
+    return distance
 
 
 with open('15-input.txt', 'r') as f:
