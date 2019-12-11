@@ -100,7 +100,9 @@ class Intcode(object):
         assert len(params) == 1
         assert len(param_modes) == 1
 
-        print(self.memory[params[0]])
+        _out = params[0] if param_modes[0] else self.memory[params[0]]
+
+        print(_out)
 
     def raise_error(self):
         print('ERROR')
