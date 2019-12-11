@@ -57,15 +57,19 @@ class Intcode(object):
             param_modes = [(self.memory[self.cur_index] // 10 ** (x + 2)) % 10
                            for x in range(param_count)]
 
-            # we need to offset by 1 because of the opcode position
-            self.cur_index += 1
+            self.old_index = self.cur_index
 
-            params = self.memory[self.cur_index: self.cur_index + param_count]
+            params = self.memory[self.cur_index + 1:
+                                 self.cur_index + 1 + param_count]
             operation(params,
                       param_modes,
                       )
 
-            self.cur_index += param_count
+            if self.old_index == self.cur_index:
+                # we need to offset by 1 because of the opcode position
+                self.cur_index += 1
+
+                self.cur_index += param_count
 
         self.result = self.memory[0]
 
@@ -119,7 +123,6 @@ class Intcode(object):
     def _jump_true(self, params, param_modes):
         assert len(params) == 2
         assert len(param_modes) == 2
-        assert param_modes[1] == 0
 
         first = params[0] if param_modes[0] else self.memory[params[0]]
         second = params[1] if param_modes[1] else self.memory[params[1]]
@@ -130,7 +133,6 @@ class Intcode(object):
     def _jump_false(self, params, param_modes):
         assert len(params) == 2
         assert len(param_modes) == 2
-        assert param_modes[1] == 0
 
         first = params[0] if param_modes[0] else self.memory[params[0]]
         second = params[1] if param_modes[1] else self.memory[params[1]]
