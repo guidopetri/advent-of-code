@@ -42,7 +42,8 @@ class Intcode(object):
             else:
                 self.raise_error()
             
-            param_modes = [self.memory[cur_index] // 10 ** (x + 2)
+            param_modes = [(self.memory[cur_index] // 10 ** (x + 2))
+                            % 10
                            for x in range(param_count)]
 
             # we need to offset by 1 because of the opcode position
