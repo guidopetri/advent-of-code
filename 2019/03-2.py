@@ -45,15 +45,16 @@ with open('03-input.txt', 'r') as f:
 #          'U98,R91,D20,R16,D67,R40,U7,R15,U6,R7']  # 410
 
 
-first_locs, first_steps = get_wire_locations(wires[0])
-second_locs, second_steps = get_wire_locations(wires[1])
+locs_1, steps_1 = get_wire_locations(wires[0])
+locs_2, steps_2 = get_wire_locations(wires[1])
 
-common_locs = set(first_locs) & set(second_locs)
+common_locs = set(locs_1) & set(locs_2)
 
 closest_locs = sorted(list(common_locs),
-                      key=lambda x: (first_steps[first_locs.index(x)]
-                                     + second_steps[second_locs.index(x)]))
+                      key=lambda x: (steps_1[locs_1.index(x)]
+                                     + steps_2[locs_2.index(x)]))
 
 print('closest location: {}'.format(closest_locs[0]))
-print('manhattan distance: {}'.format(first_steps[first_locs.index(closest_locs[0])]
-                                     + second_steps[second_locs.index(closest_locs[0])]))
+print('manhattan distance: {}'.format(steps_1[locs_1.index(closest_locs[0])]
+                                      + steps_2[locs_2.index(closest_locs[0])]
+                                      ))
