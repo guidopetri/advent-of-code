@@ -19,10 +19,10 @@ class Intcode(object):
 
     def run(self):
         self.program_halted = False
-        cur_index = 0
+        self.cur_index = 0
 
         while not self.program_halted:
-            opcode = self.memory[cur_index] % 100
+            opcode = self.memory[self.cur_index] % 100
 
             if opcode == 1:
                 operation = self._add
@@ -36,24 +36,36 @@ class Intcode(object):
             elif opcode == 4:
                 operation = self._load
                 param_count = 1
+            elif opcode == 5:
+                operation = self._jump_true
+                param_count = 2
+            elif opcode == 6:
+                operation = self._jump_false
+                param_count = 2
+            elif opcode == 7:
+                operation = self._less_than
+                param_count = 3
+            elif opcode == 8:
+                operation = self._equals
+                param_count = 3
             elif opcode == 99:
                 self.program_halted = True
                 continue
             else:
                 self.raise_error()
-            
-            param_modes = [(self.memory[cur_index] // 10 ** (x + 2))
-                            % 10
+
+            param_modes = [(self.memory[self.cur_index] // 10 ** (x + 2)) % 10
                            for x in range(param_count)]
 
             # we need to offset by 1 because of the opcode position
-            cur_index += 1
+            self.cur_index += 1
 
-            operation(self.memory[cur_index: cur_index + param_count],
+            params = self.memory[self.cur_index: self.cur_index + param_count]
+            operation(params,
                       param_modes,
                       )
 
-            cur_index += param_count
+            self.cur_index += param_count
 
         self.result = self.memory[0]
 
@@ -104,8 +116,49 @@ class Intcode(object):
 
         print(_out)
 
+    def _jump_true(self, params, param_modes):
+        assert len(params) == 2
+        assert len(param_modes) == 2
+        assert param_modes[1] == 0
+
+        first = params[0] if param_modes[0] else self.memory[params[0]]
+        second = params[1] if param_modes[1] else self.memory[params[1]]
+
+        if first:
+            self.cur_index = second
+
+    def _jump_false(self, params, param_modes):
+        assert len(params) == 2
+        assert len(param_modes) == 2
+        assert param_modes[1] == 0
+
+        first = params[0] if param_modes[0] else self.memory[params[0]]
+        second = params[1] if param_modes[1] else self.memory[params[1]]
+
+        if first == 0:
+            self.cur_index = second
+
+    def _less_than(self, params, param_modes):
+        assert len(params) == 3
+        assert len(param_modes) == 3
+        assert param_modes[2] == 0
+
+        first = params[0] if param_modes[0] else self.memory[params[0]]
+        second = params[1] if param_modes[1] else self.memory[params[1]]
+
+        self.memory[params[2]] = int(first < second)
+
+    def _equals(self, params, param_modes):
+        assert len(params) == 3
+        assert len(param_modes) == 3
+        assert param_modes[2] == 0
+
+        first = params[0] if param_modes[0] else self.memory[params[0]]
+        second = params[1] if param_modes[1] else self.memory[params[1]]
+
+        self.memory[params[2]] = int(first == second)
+
     def raise_error(self):
         print('ERROR')
         self.error = True
         self.program_halted = True
-
