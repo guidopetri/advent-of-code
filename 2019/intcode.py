@@ -7,8 +7,13 @@ class Intcode(object):
         self.error = False
         self.result = None
         self.program_halted = True
+        self.input = (None for _ in range(1))
+        self._out = None
         if memory is not None:
             self.set_memory(memory)
+
+    def set_input(self, input_):
+        self.input = input_
 
     def set_memory(self, memory):
         self.memory = list(memory)
@@ -106,9 +111,10 @@ class Intcode(object):
         assert len(param_modes) == 1
         assert param_modes[0] == 0
 
-        _in = None
+        _in = next(self.input)
+
         while not isinstance(_in, int):
-            _in = int(input('Add what number to memory? '))
+            self._in = int(input('Add what number to memory? '))
 
         self.memory[params[0]] = _in
 
@@ -116,9 +122,9 @@ class Intcode(object):
         assert len(params) == 1
         assert len(param_modes) == 1
 
-        _out = params[0] if param_modes[0] else self.memory[params[0]]
+        self._out = params[0] if param_modes[0] else self.memory[params[0]]
 
-        print(_out)
+        # print(self._out)
 
     def _jump_true(self, params, param_modes):
         assert len(params) == 2
