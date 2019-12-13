@@ -14,6 +14,7 @@ class Intcode(object):
         self._out = None
         self.conn_in = conn_in
         self.conn_out = conn_out
+        self.relative_base = 0
         if memory is not None:
             self.set_memory(memory)
 
@@ -58,11 +59,15 @@ class Intcode(object):
             elif opcode == 8:
                 operation = self._equals
                 param_count = 3
+            elif opcode == 9:
+                operation = self._set_relative
+                param_count = 1
             elif opcode == 99:
                 self.program_halted = True
                 continue
             else:
                 self.raise_error()
+                continue
 
             param_modes = [(self.memory[self.cur_index] // 10 ** (x + 2)) % 10
                            for x in range(param_count)]
@@ -90,38 +95,52 @@ class Intcode(object):
         if self.q is not None:
             self.q.put(self._out)
 
+    def _resolve_param(self, param, mode):
+        if mode == 2:
+            return self._get_at_mem(param, True)
+        elif mode == 1:
+            return param
+        elif mode == 0:
+            return self._get_at_mem(param, False)
+
     def _add(self, params, param_modes):
         assert len(params) == 3
         assert len(param_modes) == 3
-        assert param_modes[2] == 0
+        assert param_modes[2] in (0, 2)
 
         from operator import add
 
-        first_op = params[0] if param_modes[0] else self.memory[params[0]]
-        second_op = params[1] if param_modes[1] else self.memory[params[1]]
+        first = self._resolve_param(params[0], param_modes[0])
+        second = self._resolve_param(params[1], param_modes[1])
 
-        self.memory[params[2]] = add(first_op,
-                                     second_op,
-                                     )
+        self._set_at_mem(params[2],
+                         param_modes[2] == 2,
+                         add(first,
+                             second,
+                             ))
 
     def _mul(self, params, param_modes):
         assert len(params) == 3
         assert len(param_modes) == 3
-        assert param_modes[2] == 0
+        assert param_modes[2] in (0, 2)
 
         from operator import mul
 
-        first_op = params[0] if param_modes[0] else self.memory[params[0]]
-        second_op = params[1] if param_modes[1] else self.memory[params[1]]
+        first = self._resolve_param(params[0], param_modes[0])
+        second = self._resolve_param(params[1], param_modes[1])
 
-        self.memory[params[2]] = mul(first_op,
-                                     second_op,
-                                     )
+        self._set_at_mem(params[2],
+                         param_modes[2] == 2,
+                         mul(first,
+                             second,
+                             ))
 
     def _save(self, params, param_modes):
         assert len(params) == 1
         assert len(param_modes) == 1
-        assert param_modes[0] == 0
+        assert param_modes[0] in (0, 2)
+
+        _in = None
 
         if self.input is not None and self.input:
             _in = self.input.pop(0)
@@ -132,13 +151,14 @@ class Intcode(object):
         while not isinstance(_in, int):
             _in = int(input('Add what number to memory? '))
 
-        self.memory[params[0]] = _in
+        self._set_at_mem(params[0],
+                         param_modes[0] == 2,
+                         _in)
 
     def _load(self, params, param_modes):
         assert len(params) == 1
         assert len(param_modes) == 1
-
-        self._out = params[0] if param_modes[0] else self.memory[params[0]]
+        self._out = self._resolve_param(params[0], param_modes[0])
 
         if self.conn_out is not None:
             self.conn_out.send(self._out)
@@ -149,8 +169,8 @@ class Intcode(object):
         assert len(params) == 2
         assert len(param_modes) == 2
 
-        first = params[0] if param_modes[0] else self.memory[params[0]]
-        second = params[1] if param_modes[1] else self.memory[params[1]]
+        first = self._resolve_param(params[0], param_modes[0])
+        second = self._resolve_param(params[1], param_modes[1])
 
         if first:
             self.cur_index = second
@@ -159,8 +179,8 @@ class Intcode(object):
         assert len(params) == 2
         assert len(param_modes) == 2
 
-        first = params[0] if param_modes[0] else self.memory[params[0]]
-        second = params[1] if param_modes[1] else self.memory[params[1]]
+        first = self._resolve_param(params[0], param_modes[0])
+        second = self._resolve_param(params[1], param_modes[1])
 
         if first == 0:
             self.cur_index = second
@@ -168,22 +188,56 @@ class Intcode(object):
     def _less_than(self, params, param_modes):
         assert len(params) == 3
         assert len(param_modes) == 3
-        assert param_modes[2] == 0
+        assert param_modes[2] in (0, 2)
 
-        first = params[0] if param_modes[0] else self.memory[params[0]]
-        second = params[1] if param_modes[1] else self.memory[params[1]]
+        first = self._resolve_param(params[0], param_modes[0])
+        second = self._resolve_param(params[1], param_modes[1])
 
-        self.memory[params[2]] = int(first < second)
+        self._set_at_mem(params[2],
+                         param_modes[2] == 2,
+                         int(first < second))
 
     def _equals(self, params, param_modes):
         assert len(params) == 3
         assert len(param_modes) == 3
-        assert param_modes[2] == 0
+        assert param_modes[2] in (0, 2)
 
-        first = params[0] if param_modes[0] else self.memory[params[0]]
-        second = params[1] if param_modes[1] else self.memory[params[1]]
+        first = self._resolve_param(params[0], param_modes[0])
+        second = self._resolve_param(params[1], param_modes[1])
 
-        self.memory[params[2]] = int(first == second)
+        self._set_at_mem(params[2],
+                         param_modes[2] == 2,
+                         int(first == second))
+
+    def _set_relative(self, params, param_modes):
+        assert len(params) == 1
+        assert len(param_modes) == 1
+
+        change = self._resolve_param(params[0], param_modes[0])
+
+        self.relative_base += change
+
+    def _get_at_mem(self, loc, relative):
+        if relative:
+            base = self.relative_base
+        else:
+            base = 0
+
+        self._check_mem(loc + base)
+        return self.memory[loc + base]
+
+    def _set_at_mem(self, loc, relative, value):
+        if relative:
+            base = self.relative_base
+        else:
+            base = 0
+
+        self._check_mem(loc + base)
+        self.memory[loc + base] = value
+
+    def _check_mem(self, loc):
+        if len(self.memory) <= loc:
+            self.memory.extend([0 for _ in range(loc - len(self.memory) + 1)])
 
     def raise_error(self):
         print('ERROR')
