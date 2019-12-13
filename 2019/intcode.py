@@ -3,12 +3,17 @@
 
 class Intcode(object):
 
-    def __init__(self, memory=None):
+    def __init__(self, memory=None, conn_in=None, conn_out=None, id_=None,
+                 q=None):
+        self.id = id_
+        self.q = q
         self.error = False
         self.result = None
         self.program_halted = True
-        self.input = (None for _ in range(1))
+        self.input = None
         self._out = None
+        self.conn_in = conn_in
+        self.conn_out = conn_out
         if memory is not None:
             self.set_memory(memory)
 
@@ -73,10 +78,17 @@ class Intcode(object):
             if self.old_index == self.cur_index:
                 # we need to offset by 1 because of the opcode position
                 self.cur_index += 1
-
                 self.cur_index += param_count
 
         self.result = self.memory[0]
+
+        # if self.conn_in is not None:
+        #     self.conn_in.close()
+        # if self.conn_out is not None:
+        #     self.conn_out.close()
+
+        if self.q is not None:
+            self.q.put(self._out)
 
     def _add(self, params, param_modes):
         assert len(params) == 3
@@ -111,10 +123,14 @@ class Intcode(object):
         assert len(param_modes) == 1
         assert param_modes[0] == 0
 
-        _in = next(self.input)
+        if self.input is not None and self.input:
+            _in = self.input.pop(0)
+
+        elif self.conn_in is not None:
+            _in = self.conn_in.recv()
 
         while not isinstance(_in, int):
-            self._in = int(input('Add what number to memory? '))
+            _in = int(input('Add what number to memory? '))
 
         self.memory[params[0]] = _in
 
@@ -123,8 +139,11 @@ class Intcode(object):
         assert len(param_modes) == 1
 
         self._out = params[0] if param_modes[0] else self.memory[params[0]]
-
-        # print(self._out)
+        print('sending msg {} from {}'.format(self._out, self.id))
+        if self.conn_out is not None:
+            self.conn_out.send(self._out)
+        else:
+            print(self._out)
 
     def _jump_true(self, params, param_modes):
         assert len(params) == 2
