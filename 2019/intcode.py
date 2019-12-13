@@ -139,7 +139,7 @@ class Intcode(object):
         assert len(param_modes) == 1
 
         self._out = params[0] if param_modes[0] else self.memory[params[0]]
-        print('sending msg {} from {}'.format(self._out, self.id))
+
         if self.conn_out is not None:
             self.conn_out.send(self._out)
         else:
