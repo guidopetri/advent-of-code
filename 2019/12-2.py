@@ -15,8 +15,8 @@ class Planet(object):
 
     def apply_velocity(self):
         self.x += self.x_vel
-        self.y += self.y_vel
-        self.z += self.z_vel
+        # self.y += self.y_vel
+        # self.z += self.z_vel
 
     @property
     def potential_energy(self):
@@ -51,10 +51,10 @@ with open('12-input.txt', 'r') as f:
     initial_positions = f.readlines()
 
 # sample input
-initial_positions = """<x=-1, y=0, z=2>
-                       <x=2, y=-10, z=-7>
-                       <x=4, y=-8, z=8>
-                       <x=3, y=5, z=-1>""".split('\n')
+# initial_positions = """<x=-1, y=0, z=2>
+#                        <x=2, y=-10, z=-7>
+#                        <x=4, y=-8, z=8>
+#                        <x=3, y=5, z=-1>""".split('\n')
 # initial_positions = """<x=-8, y=-10, z=0>
 #                        <x=5, y=5, z=10>
 #                        <x=2, y=-7, z=3>
@@ -93,15 +93,15 @@ while True and n_iter < 10000000000:
         first.x_vel += int(first.x < second.x)
         second.x_vel -= int(first.x < second.x)
 
-        first.y_vel -= int(first.y > second.y)
-        second.y_vel += int(first.y > second.y)
-        first.y_vel += int(first.y < second.y)
-        second.y_vel -= int(first.y < second.y)
+        # first.y_vel -= int(first.y > second.y)
+        # second.y_vel += int(first.y > second.y)
+        # first.y_vel += int(first.y < second.y)
+        # second.y_vel -= int(first.y < second.y)
 
-        first.z_vel -= int(first.z > second.z)
-        second.z_vel += int(first.z > second.z)
-        first.z_vel += int(first.z < second.z)
-        second.z_vel -= int(first.z < second.z)
+        # first.z_vel -= int(first.z > second.z)
+        # second.z_vel += int(first.z > second.z)
+        # first.z_vel += int(first.z < second.z)
+        # second.z_vel -= int(first.z < second.z)
 
     for planet in planets:
         planet.apply_velocity()
