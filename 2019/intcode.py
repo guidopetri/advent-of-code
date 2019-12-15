@@ -146,11 +146,15 @@ class Intcode(object):
             _in = self.input.pop(0)
 
         elif self.conn_in is not None:
-            _in = self.conn_in.recv()
+            if self.conn_in.poll(2):
+                _in = self.conn_in.recv()
+            else:
+                self.raise_error()
+                return
 
         while not isinstance(_in, int):
             _in = int(input('Add what number to memory? '))
-
+        print('received {}'.format(_in), flush=True)
         self._set_at_mem(params[0],
                          param_modes[0] == 2,
                          _in)
@@ -240,6 +244,6 @@ class Intcode(object):
             self.memory.extend([0 for _ in range(loc - len(self.memory) + 1)])
 
     def raise_error(self):
-        print('ERROR')
+        print('ERROR', flush=True)
         self.error = True
         self.program_halted = True
